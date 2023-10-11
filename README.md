@@ -1,2 +1,4 @@
-# BreastCancer_Prediction
-ML pipeline predicting breast cancer using supervised algorithms based on diagnostic features.
+# Breast Cancer Prediction
+
+## Overview
+Utilise an ensemble of supervised machine learning models to predict the occurrence of breast cancer based on diagnostic features.
