@@ -25,6 +25,9 @@ The project adopts a stacking ensemble technique. The following steps outline th
 - **AUC-ROC**: 0.9581
 
 ### Confusion Matrix:
+
+<img width="482" alt="confusion_matrix" src="https://github.com/cybersamurai2410/BreastCancer_Prediction/assets/66138996/1dd19c04-adbb-4358-abe0-3e125f053fa6">
+
 - 70 True Positives (correctly predicted Malignant)
 - 40 True Negatives (correctly predicted Benign)
 - 3 False Negatives (incorrectly predicted Benign)
