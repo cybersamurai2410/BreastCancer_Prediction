@@ -88,72 +88,80 @@ def run_keras_inference(data):
     predicted_class = int(np.argmax(prediction, axis=1)[0])
     return {"prediction": predicted_class}
 
-# Start the interaction
-thread = client.beta.threads.create()
+# Function to handle assistant interaction
+def classify_cancer(user_input):
+    """Handles both structured data and image classification requests."""
+    
+    # Create a thread for the conversation
+    thread = client.beta.threads.create()
+    
+    # Send the user message
+    client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=user_input
+    )
 
-# Example user input (structured data case)
-user_input = "Classify these features: [5.1, 3.5, 1.4, 0.2]"
+    # Run the assistant and wait for the result
+    run = client.beta.threads.runs.create_and_poll(
+        thread_id=thread.id,
+        assistant_id=assistant.id
+    )
 
-# Send the message to the assistant
-client.beta.threads.messages.create(
-    thread_id=thread.id,
-    role="user",
-    content=user_input
-)
+    # If the assistant requests a function call
+    if run.status == "requires_action" and hasattr(run, "required_action"):
+        tool_calls = run.required_action.submit_tool_outputs.tool_calls
+        tool_outputs = []
 
-# Run the assistant and wait for the result using create_and_poll()
-run = client.beta.threads.runs.create_and_poll(
-    thread_id=thread.id,
-    assistant_id=assistant.id
-)
+        for tool_call in tool_calls:
+            func_name = tool_call.function.name
+            func_args = json.loads(tool_call.function.arguments)
 
-# Check if the assistant requested a function call
-if run.status == "requires_action" and hasattr(run, "required_action"):
-    tool_calls = run.required_action.submit_tool_outputs.tool_calls
-    tool_outputs = []
+            if func_name == "run_sklearn_inference":
+                result = run_sklearn_inference(func_args)
+            elif func_name == "run_keras_inference":
+                result = run_keras_inference(func_args)
+            else:
+                result = {"error": f"Unknown function: {func_name}"}
 
-    for tool_call in tool_calls:
-        func_name = tool_call.function.name
-        func_args = json.loads(tool_call.function.arguments)
+            tool_outputs.append({
+                "tool_call_id": tool_call.id,
+                "output": json.dumps(result)
+            })
 
-        if func_name == "run_sklearn_inference":
-            result = run_sklearn_inference(func_args)
-        elif func_name == "run_keras_inference":
-            result = run_keras_inference(func_args)
+        # Send function results back to OpenAI if tool_outputs exist
+        if tool_outputs:
+            try:
+                run = client.beta.threads.runs.submit_tool_outputs_and_poll(
+                    thread_id=thread.id,
+                    run_id=run.id,
+                    tool_outputs=tool_outputs
+                )
+                print("Tool outputs submitted successfully.")
+            except Exception as e:
+                print("Failed to submit tool outputs:", e)
         else:
-            result = {"error": f"Unknown function: {func_name}"}
+            print("No tool outputs to submit.")
 
-        tool_outputs.append({
-            "tool_call_id": tool_call.id,
-            "output": json.dumps(result)
-        })
+    # Retrieve final response
+    if run.status == "completed":
+        messages = client.beta.threads.messages.list(thread_id=thread.id)
 
-    # Send function results back to OpenAI if tool_outputs exist
-    if tool_outputs:
-        try:
-            run = client.beta.threads.runs.submit_tool_outputs_and_poll(
-                thread_id=thread.id,
-                run_id=run.id,
-                tool_outputs=tool_outputs
-            )
-            print("Tool outputs submitted successfully.")
-        except Exception as e:
-            print("Failed to submit tool outputs:", e)
-    else:
-        print("No tool outputs to submit.")
-
-# If the run is completed, retrieve the final assistant response
-if run.status == "completed":
-    messages = client.beta.threads.messages.list(thread_id=thread.id)
-
-    # Ensure response is printed properly
-    if messages.data:
-        last_message = messages.data[-1].content
-        if last_message and isinstance(last_message, list) and len(last_message) > 0:
-            print("Final response:", last_message[0].text.value)
+        # Ensure response is printed properly
+        if messages.data:
+            last_message = messages.data[-1].content
+            if last_message and isinstance(last_message, list) and len(last_message) > 0:
+                print("Final response:", last_message[0].text.value)
+            else:
+                print("Final response: [Empty Message]")
         else:
-            print("Final response: [Empty Message]")
+            print("Final response: [No Messages]")
     else:
-        print("Final response: [No Messages]")
-else:
-    print("Run status:", run.status)
+        print("Run status:", run.status)
+
+# Example Inputs
+print("\n🔵 Running structured data classification...")
+classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]")
+
+print("\n🟠 Running image classification...")
+classify_cancer("Classify this image: breast_scan.jpg")
