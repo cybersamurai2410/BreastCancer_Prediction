@@ -9,14 +9,14 @@ from openai import OpenAI
 # Initialize OpenAI client
 client = OpenAI()
 
-# Load models (update file paths as needed)
+# Load machine learning models 
 sklearn_model = joblib.load("breast_cancer_sklearn.joblib")
 keras_model = load_model("breast_cancer_keras.h5")
 
-# Create the assistant with function calling
+# Create an AI Assistant with function calling
 assistant = client.beta.assistants.create(
     name="Breast Cancer Prediction Assistant",
-    instructions="Classify breast cancer based on either structured numerical data or an image. Use 'run_sklearn_inference' for structured data and 'run_keras_inference' for images.",
+    instructions="Classify breast cancer based on either structured numerical data or an image. The assistant must analyze the model's classification results and generate a detailed, context-aware explanation and diagnosis, considering risk factors, potential follow-up steps, and medical recommendations.",
     model="gpt-4o",
     tools=[
         {
@@ -57,7 +57,7 @@ assistant = client.beta.assistants.create(
     ]
 )
 
-# Define inference functions
+# Define model inference functions
 def run_sklearn_inference(data):
     """Perform breast cancer classification using scikit-learn."""
     features = data.get("features")
@@ -66,7 +66,7 @@ def run_sklearn_inference(data):
     
     features_arr = np.array(features).reshape(1, -1)
     prediction = sklearn_model.predict(features_arr)
-    return {"prediction": prediction.tolist()}
+    return {"prediction": prediction.tolist()}  # Assistant will generate explanation
 
 def run_keras_inference(data):
     """Perform breast cancer classification using Keras (image model)."""
@@ -74,8 +74,9 @@ def run_keras_inference(data):
     if not image_path:
         return {"error": "No image path provided."}
 
+    # Preprocess image
     image = Image.open(image_path).resize((224, 224))
-    image_arr = np.array(image) / 255.0
+    image_arr = np.array(image) / 255.0  # Normalize pixel values
 
     # Ensure the image has 3 channels
     if len(image_arr.shape) == 2:
@@ -86,7 +87,7 @@ def run_keras_inference(data):
     image_arr = np.expand_dims(image_arr, axis=0)
     prediction = keras_model.predict(image_arr)
     predicted_class = int(np.argmax(prediction, axis=1)[0])
-    return {"prediction": predicted_class}
+    return {"prediction": predicted_class}  # Assistant will generate explanation
 
 # Function to handle assistant interaction
 def classify_cancer(user_input):
@@ -95,7 +96,7 @@ def classify_cancer(user_input):
     # Create a thread for the conversation
     thread = client.beta.threads.create()
     
-    # Send the user message
+    # Send the user message to the assistant
     client.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
@@ -117,6 +118,7 @@ def classify_cancer(user_input):
             func_name = tool_call.function.name
             func_args = json.loads(tool_call.function.arguments)
 
+            # Run the appropriate model
             if func_name == "run_sklearn_inference":
                 result = run_sklearn_inference(func_args)
             elif func_name == "run_keras_inference":
@@ -124,6 +126,7 @@ def classify_cancer(user_input):
             else:
                 result = {"error": f"Unknown function: {func_name}"}
 
+            # Prepare tool output
             tool_outputs.append({
                 "tool_call_id": tool_call.id,
                 "output": json.dumps(result)
@@ -159,9 +162,10 @@ def classify_cancer(user_input):
     else:
         print("Run status:", run.status)
 
-# Example Inputs
-print("\n🔵 Running structured data classification...")
-classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]")
+# Main execution block
+if __name__ == "__main__":
+    print("\nRunning structured data classification...")
+    classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]")
 
-print("\n🟠 Running image classification...")
-classify_cancer("Classify this image: breast_scan.jpg")
+    print("\nRunning image classification...")
+    classify_cancer("Classify this image: breast_scan.jpg")
