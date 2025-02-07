@@ -9,7 +9,7 @@ from openai import OpenAI
 # Initialize OpenAI client
 client = OpenAI()
 
-# Load machine learning models 
+# Load machine learning models
 sklearn_model = joblib.load("breast_cancer_sklearn.joblib")
 keras_model = load_model("breast_cancer_keras.h5")
 
@@ -61,9 +61,9 @@ assistant = client.beta.assistants.create(
 def run_sklearn_inference(data):
     """Perform breast cancer classification using scikit-learn."""
     features = data.get("features")
-    if not features:
-        return {"error": "No features provided."}
-    
+    if not features or not isinstance(features, list) or len(features) == 0:
+        return {"error": "Invalid or missing features."}
+
     features_arr = np.array(features).reshape(1, -1)
     prediction = sklearn_model.predict(features_arr)
     return {"prediction": prediction.tolist()}  # Assistant will generate explanation
@@ -83,6 +83,10 @@ def run_keras_inference(data):
         image_arr = np.stack([image_arr] * 3, axis=-1)
     elif image_arr.shape[2] == 4:
         image_arr = image_arr[..., :3]
+
+    # Convert grayscale to RGB
+    if image_arr.shape[-1] == 1:
+        image_arr = np.repeat(image_arr, 3, axis=-1)
 
     image_arr = np.expand_dims(image_arr, axis=0)
     prediction = keras_model.predict(image_arr)
@@ -110,13 +114,15 @@ def classify_cancer(user_input):
     )
 
     # If the assistant requests a function call
-    if run.status == "requires_action" and hasattr(run, "required_action"):
-        tool_calls = run.required_action.submit_tool_outputs.tool_calls
+    if run.status == "requires_action" and "submit_tool_outputs" in run.required_action:
+        tool_calls = run.required_action["submit_tool_outputs"]["tool_calls"]
         tool_outputs = []
 
         for tool_call in tool_calls:
-            func_name = tool_call.function.name
-            func_args = json.loads(tool_call.function.arguments)
+            func_name = tool_call["function"]["name"]
+            func_args = tool_call["function"]["arguments"]
+            if not isinstance(func_args, dict):
+                func_args = json.loads(func_args)
 
             # Run the appropriate model
             if func_name == "run_sklearn_inference":
@@ -128,7 +134,7 @@ def classify_cancer(user_input):
 
             # Prepare tool output
             tool_outputs.append({
-                "tool_call_id": tool_call.id,
+                "tool_call_id": tool_call["id"],
                 "output": json.dumps(result)
             })
 
@@ -140,7 +146,8 @@ def classify_cancer(user_input):
                     run_id=run.id,
                     tool_outputs=tool_outputs
                 )
-                print("Tool outputs submitted successfully.")
+                if run.status != "completed":
+                    print(f"Assistant did not complete successfully. Status: {run.status}")
             except Exception as e:
                 print("Failed to submit tool outputs:", e)
         else:
@@ -154,7 +161,7 @@ def classify_cancer(user_input):
         if messages.data:
             last_message = messages.data[-1].content
             if last_message and isinstance(last_message, list) and len(last_message) > 0:
-                print("Final response:", last_message[0].text.value)
+                print("Final response:", last_message[0]["text"]["value"])
             else:
                 print("Final response: [Empty Message]")
         else:
