@@ -4,60 +4,12 @@ import joblib
 import numpy as np
 from PIL import Image
 from keras.models import load_model
-from openai import OpenAI
-
-# Initialize OpenAI client
-client = OpenAI()
+from assistants import client, retrieve_assistant, retrieve_thread, create_assistant  
 
 # Load machine learning models
 sklearn_model = joblib.load("breast_cancer_sklearn.joblib")
 keras_model = load_model("breast_cancer_keras.h5")
 
-# Create an AI Assistant with function calling
-assistant = client.beta.assistants.create(
-    name="Breast Cancer Prediction Assistant",
-    instructions="Classify breast cancer based on either structured numerical data or an image. The assistant must analyze the model's classification results and generate a detailed, context-aware explanation and diagnosis, considering risk factors, potential follow-up steps, and medical recommendations.",
-    model="gpt-4o",
-    tools=[
-        {
-            "type": "function",
-            "function": {
-                "name": "run_sklearn_inference",
-                "description": "Predict breast cancer based on structured numerical features.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "features": {
-                            "type": "array",
-                            "items": {"type": "number"},
-                            "description": "List of numerical features."
-                        }
-                    },
-                    "required": ["features"]
-                }
-            }
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "run_keras_inference",
-                "description": "Predict breast cancer using a medical image.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "image_path": {
-                            "type": "string",
-                            "description": "Path to the medical image."
-                        }
-                    },
-                    "required": ["image_path"]
-                }
-            }
-        }
-    ]
-)
-
-# Define model inference functions
 def run_sklearn_inference(data):
     """Perform breast cancer classification using scikit-learn."""
     features = data.get("features")
@@ -66,7 +18,7 @@ def run_sklearn_inference(data):
 
     features_arr = np.array(features).reshape(1, -1)
     prediction = sklearn_model.predict(features_arr)
-    return {"prediction": prediction.tolist()}  # Assistant will generate explanation
+    return {"prediction": prediction.tolist()}
 
 def run_keras_inference(data):
     """Perform breast cancer classification using Keras (image model)."""
@@ -83,29 +35,42 @@ def run_keras_inference(data):
         image_arr = np.stack([image_arr] * 3, axis=-1)
     elif image_arr.shape[2] == 4:
         image_arr = image_arr[..., :3]
-
-    # Convert grayscale to RGB
     if image_arr.shape[-1] == 1:
         image_arr = np.repeat(image_arr, 3, axis=-1)
 
     image_arr = np.expand_dims(image_arr, axis=0)
     prediction = keras_model.predict(image_arr)
     predicted_class = int(np.argmax(prediction, axis=1)[0])
-    return {"prediction": predicted_class}  # Assistant will generate explanation
+    return {"prediction": predicted_class}
 
-# Function to handle assistant interaction
-def classify_cancer(user_input):
+def classify_cancer(user_input, thread_id=None):
     """Handles both structured data and image classification requests."""
-    
-    # Create a thread for the conversation
-    thread = client.beta.threads.create()
-    
+
+    # Retrieve existing thread if thread_id is provided, otherwise create a new one
+    if thread_id:
+        try:
+            thread = retrieve_thread(thread_id)
+            print(f"Reusing existing thread: {thread.id}")
+        except Exception as e:
+            print(f"Thread retrieval failed ({e}), creating a new thread.")
+            thread = client.beta.threads.create()
+    else:
+        thread = client.beta.threads.create()
+
     # Send the user message to the assistant
     client.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
         content=user_input
     )
+
+    # Retrieve the existing assistant, or create a new one if needed
+    assistant_id = "asst_abc123"  # Replace with actual assistant ID
+    try:
+        assistant = retrieve_assistant(assistant_id)
+    except Exception as e:
+        print(f"Assistant retrieval failed ({e}), creating a new assistant.")
+        assistant = create_assistant()
 
     # Run the assistant and wait for the result
     run = client.beta.threads.runs.create_and_poll(
@@ -124,7 +89,6 @@ def classify_cancer(user_input):
             if not isinstance(func_args, dict):
                 func_args = json.loads(func_args)
 
-            # Run the appropriate model
             if func_name == "run_sklearn_inference":
                 result = run_sklearn_inference(func_args)
             elif func_name == "run_keras_inference":
@@ -132,13 +96,11 @@ def classify_cancer(user_input):
             else:
                 result = {"error": f"Unknown function: {func_name}"}
 
-            # Prepare tool output
             tool_outputs.append({
                 "tool_call_id": tool_call["id"],
                 "output": json.dumps(result)
             })
 
-        # Send function results back to OpenAI if tool_outputs exist
         if tool_outputs:
             try:
                 run = client.beta.threads.runs.submit_tool_outputs_and_poll(
@@ -146,18 +108,12 @@ def classify_cancer(user_input):
                     run_id=run.id,
                     tool_outputs=tool_outputs
                 )
-                if run.status != "completed":
-                    print(f"Assistant did not complete successfully. Status: {run.status}")
             except Exception as e:
                 print("Failed to submit tool outputs:", e)
-        else:
-            print("No tool outputs to submit.")
 
     # Retrieve final response
     if run.status == "completed":
         messages = client.beta.threads.messages.list(thread_id=thread.id)
-
-        # Ensure response is printed properly
         if messages.data:
             last_message = messages.data[-1].content
             if last_message and isinstance(last_message, list) and len(last_message) > 0:
@@ -169,10 +125,13 @@ def classify_cancer(user_input):
     else:
         print("Run status:", run.status)
 
-# Main execution block
+    return thread.id  # Return the thread ID for reuse
+
 if __name__ == "__main__":
+    thread_id = "thread_abc123"  # Use a stored thread ID if available
+
     print("\nRunning structured data classification...")
-    classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]")
+    thread_id = classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]", thread_id=thread_id)
 
     print("\nRunning image classification...")
-    classify_cancer("Classify this image: breast_scan.jpg")
+    thread_id = classify_cancer("Classify this image: breast_scan.jpg", thread_id=thread_id)
