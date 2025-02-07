@@ -1,4 +1,4 @@
-# Breast Cancer Prediction using Stacking Ensemble Learning and Image Recognition
+# Breast Cancer Prediction using Stacking Ensemble Learning and Image Recognition with Agentic Workflow
 
 ## Overview
 This project aims to predict the occurrence of breast cancer using a stacking ensemble approach. By leveraging the combined strength of multiple machine learning models, the ensemble achieves high accuracy and robustness in predictions.
