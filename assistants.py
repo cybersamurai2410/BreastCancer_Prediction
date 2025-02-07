@@ -1,6 +1,9 @@
+import os 
 from openai import OpenAI
 
-client = OpenAI()
+# Initialize OpenAI client
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 def retrieve_assistant(assistant_id):
     """Retrieves an existing assistant by its ID."""
@@ -59,4 +62,5 @@ def create_assistant():
             }
         ]
     )
+    
     return assistant
