@@ -130,7 +130,7 @@ def classify_cancer(user_input, thread_id=None):
 if __name__ == "__main__":
     thread_id = "thread_abc123"  # Use a stored thread ID if available
 
-    print("\nRunning structured data classification...")
+    print("\nRunning ensemble learning model...")
     thread_id = classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]", thread_id=thread_id)
 
     print("\nRunning image classification...")
