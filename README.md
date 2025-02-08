@@ -42,7 +42,7 @@ The project adopts a stacking ensemble technique. The following steps outline th
 ### Evaluation
 
 ## OpenAI Assistants API
-### Running Structured Data Classification
+### Enemble Learning Model Inference
 ```python
 # Calling enemble learning model
 classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]", thread_id="thread_abc123")
@@ -57,7 +57,7 @@ However, monitoring for any changes and follow-up screenings are recommended."
 
 ---
 
-### Running Image Classification
+### Image Recognition Inference 
 ```python
 # Calling image classification
 classify_cancer("Classify this image: breast_scan.jpg", thread_id="thread_abc123")
