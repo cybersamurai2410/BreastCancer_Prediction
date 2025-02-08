@@ -42,4 +42,30 @@ The project adopts a stacking ensemble technique. The following steps outline th
 ### Evaluation
 
 ## OpenAI Assistants API
+### Running Structured Data Classification
+```python
+# Calling enemble learning model
+classify_cancer("Classify these features: [5.1, 3.5, 1.4, 0.2]", thread_id="thread_abc123")
+```
+**Console Output:**
+```bash
+Running enemble learning model...
+Final response: "The model predicts a benign tumor based on the provided numerical features. 
+Benign tumors are generally non-cancerous and do not spread to other parts of the body. 
+However, monitoring for any changes and follow-up screenings are recommended."
+```
 
+---
+
+### Running Image Classification
+```python
+# Calling image classification
+classify_cancer("Classify this image: breast_scan.jpg", thread_id="thread_abc123")
+```
+**Console Output:**
+```bash
+Running image classification...
+Final response: "The model predicts a malignant tumor based on the medical image. 
+Malignant tumors exhibit uncontrolled cell growth and may spread to surrounding tissues. 
+Further diagnostic tests, such as a biopsy or MRI, are recommended to confirm the diagnosis."
+```
