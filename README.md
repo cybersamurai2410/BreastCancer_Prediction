@@ -16,7 +16,7 @@ The project adopts a stacking ensemble technique. The following steps outline th
 2. **Training Base Models**: Three models—Random Forest, XGBoost, and SVM—are trained on the training set.
 3. **Generate Meta-Features**: The trained models make predictions on the validation set, which are used as meta-features.
 4. **Train Meta-Model**: A Logistic Regression model is trained on the meta-features.
-5. **Making Predictions**: For the test set, predictions are first obtained from each of the base models, then combined, and the meta-model provides the final prediction.
+5. **Inference**: For the test set, predictions are first obtained from each of the base models, then combined, and the meta-model provides the final prediction.
 
 ### Evaluation
 
@@ -41,6 +41,14 @@ The project adopts a stacking ensemble technique. The following steps outline th
 The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-image-dataset) (Curated Breast Imaging Subset of DDSM) dataset is a collection of medical images in JPEG format, derived from the original dataset which was 163GB in size. The resolution of the images in the CBIS-DDSM dataset has been maintained to match that of the original dataset. This dataset is primarily focused on breast imaging for mammography.
 
 ### Methodology
+1. Data Preprocessing
+  * The images are resized to 50x50 pixels and converted to RGB (3 channels).
+  * Data augmentation is applied using rotation, width & height shift, shear transform, zoom range, horizontal/vertical flip and fill mode.
+  * Dataset split into training and test sets.
+  * Labels are one-hot encoded for binary classification (cancer or no cancer). 
+2. Model Architecture
+3. Training
+4. Evaluation 
 
 **Model Summary:**<br>
 <img width="368" alt="image" src="https://github.com/user-attachments/assets/746f2be6-443f-47a8-ab35-22d71d70df88" />
