@@ -41,7 +41,13 @@ The project adopts a stacking ensemble technique. The following steps outline th
 The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-image-dataset) (Curated Breast Imaging Subset of DDSM) dataset is a collection of medical images in JPEG format, derived from the original dataset which was 163GB in size. The resolution of the images in the CBIS-DDSM dataset has been maintained to match that of the original dataset. This dataset is primarily focused on breast imaging for mammography.
 
 ### Methodology
+
 ### Evaluation
+![image](https://github.com/user-attachments/assets/79b49eca-2649-480d-bb35-93f7a3a3ea20)
+![image](https://github.com/user-attachments/assets/d3364a01-0bad-48f8-a3c3-8ee10eb67551)
+![image](https://github.com/user-attachments/assets/1917df0b-94c9-4647-81eb-70d1cba8d0dd)<br>
+![image](https://github.com/user-attachments/assets/36107b25-9ce3-484b-8514-1b44da834bdd)
+![image](https://github.com/user-attachments/assets/8987b527-2e2e-48c3-88f1-6927a50629ec)
 
 ## OpenAI Assistants API
 ### Enemble Learning Model Inference
