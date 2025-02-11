@@ -42,8 +42,12 @@ The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-
 
 ### Methodology
 
+**Model Summary:**<br>
+<img width="368" alt="image" src="https://github.com/user-attachments/assets/746f2be6-443f-47a8-ab35-22d71d70df88" />
+
 ### Evaluation
-![image](https://github.com/user-attachments/assets/79b49eca-2649-480d-bb35-93f7a3a3ea20)
+<img width="407" alt="image" src="https://github.com/user-attachments/assets/e7338bfe-b6f0-4fa0-ba27-48a45b6e39d6" />
+
 ![image](https://github.com/user-attachments/assets/d3364a01-0bad-48f8-a3c3-8ee10eb67551)
 ![image](https://github.com/user-attachments/assets/1917df0b-94c9-4647-81eb-70d1cba8d0dd)<br>
 ![image](https://github.com/user-attachments/assets/36107b25-9ce3-484b-8514-1b44da834bdd)
