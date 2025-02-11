@@ -38,6 +38,8 @@ The project adopts a stacking ensemble technique. The following steps outline th
 ## Image Recognition 
 
 ### Dataset
+The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-image-dataset) (Curated Breast Imaging Subset of DDSM) dataset is a collection of medical images in JPEG format, derived from the original dataset which was 163GB in size. The resolution of the images in the CBIS-DDSM dataset has been maintained to match that of the original dataset. This dataset is primarily focused on breast imaging for mammography.
+
 ### Methodology
 ### Evaluation
 
