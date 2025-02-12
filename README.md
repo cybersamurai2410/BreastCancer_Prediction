@@ -47,8 +47,19 @@ The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-
   * Dataset split into training and test sets.
   * Labels are one-hot encoded for binary classification (cancer or no cancer). 
 2. Model Architecture
+ * 4 convolutional layers with batch normalization and max pooling.
+ * Fully connected layers with dropout.  
 3. Training
-4. Evaluation 
+ * Adam optimizer
+ * BinaryCrossentropy loss function
+ * Accuracy metric
+ * EarlyStopping stops training if validation loss doesn not improve for 5 epochs.
+ * ReduceLROnPlateau reduces learning rate by factor of 0.2 if validation loss stagnates.  
+4. Evaluation
+ * Loss and accuracy
+ * Confusion matrix
+ * AUC-ROC curve
+ * Precision, recall and f1-score 
 
 **Model Summary:**<br>
 <img width="368" alt="image" src="https://github.com/user-attachments/assets/746f2be6-443f-47a8-ab35-22d71d70df88" />
