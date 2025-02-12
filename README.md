@@ -47,8 +47,8 @@ The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-
   * Dataset split into training and test sets.
   * Labels are one-hot encoded for binary classification (cancer or no cancer). 
 2. Model Architecture
- * 4 convolutional layers with batch normalization and max pooling.
- * Fully connected layers with dropout.  
+ * 4 convolutional layers (Conv2D) with batch normalization (BatchNormalization) and max pooling (MaxPooling2D).
+ * Fully connected (Dense) layers with dropout.  
 3. Training
  * Adam optimizer
  * BinaryCrossentropy loss function
@@ -65,10 +65,10 @@ The [CBIS-DDSM](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-
 <img width="368" alt="image" src="https://github.com/user-attachments/assets/746f2be6-443f-47a8-ab35-22d71d70df88" />
 
 ### Evaluation
-<img width="407" alt="image" src="https://github.com/user-attachments/assets/e7338bfe-b6f0-4fa0-ba27-48a45b6e39d6" />
+<img width="407" alt="image" src="https://github.com/user-attachments/assets/e7338bfe-b6f0-4fa0-ba27-48a45b6e39d6" /><br>
+<img width="388" alt="image" src="https://github.com/user-attachments/assets/8e034f59-96e7-4eb5-91be-00a99b34e691" />
+<img width="366" alt="image" src="https://github.com/user-attachments/assets/ed930338-49f0-4785-bc14-19221419ccb2" />
 
-![image](https://github.com/user-attachments/assets/d3364a01-0bad-48f8-a3c3-8ee10eb67551)
-![image](https://github.com/user-attachments/assets/1917df0b-94c9-4647-81eb-70d1cba8d0dd)<br>
 ![image](https://github.com/user-attachments/assets/36107b25-9ce3-484b-8514-1b44da834bdd)
 ![image](https://github.com/user-attachments/assets/8987b527-2e2e-48c3-88f1-6927a50629ec)
 
